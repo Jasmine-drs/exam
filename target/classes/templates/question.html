@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>题库页面</title>
+    <link rel="stylesheet" href="../static/css/personnel.css">
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/js/http_code.jquery.com_jquery-1.12.4.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+    <script>
+        $(function () {
+            choice()
+        })
+    </script>
+</head>
+<body>
+<div>
+    <div id="que">
+        <button onclick="choice()">单选题</button>
+        <button onclick="judgment()">判断题</button>
+        <button onclick="solution()">解答题</button>
+    </div>
+    <div id="top-right">
+        <button onclick="addButton()">+增加</button>
+    </div>
+    <div id="div-table" onclick="">
+        <table style="width: 100%">
+            <tr style="border: 1px solid">
+                <th>id</th>
+                <th>题目</th>
+                <th>答案</th>
+                <th>分数</th>
+                <th>状态</th>
+                <th>操作员</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+            <tbody id="tb">
+            <tr>
+                <td colspan="8">暂无数据</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+</body>
+</html>
+<!--layui 引用-->
+<script src="../static/layui-v2.6.8/layui/layui.js"></script>
+<script>
+    let flag = 0;// 标识题目类型
+    let tb = $("#tb");
+
+    /**
+     * 单选题
+     */
+    function choice() {
+        flag = 1;
+        myAjax("/choices", null, "get")
+    }
+
+    /**
+     * 判断题
+     */
+    function judgment() {
+        flag = 2;
+        myAjax("/judgments", null, "get")
+    }
+
+    /**
+     * 解答题
+     */
+    function solution() {
+        flag = 3;
+        myAjax("/solutions", null, "get")
+    }
+
+    /**
+     * 增加题目
+     */
+    function addButton() {
+        location.href = "editorQuestion.html?id= &flag="+flag;
+    }
+
+    /**
+     * 设置表格
+     * @param res
+     * @param length
+     */
+    function setHtml(res, length) {
+        let html = "暂无数据"
+        let s = ""
+        let zz = ""
+
+        for (let i = 0; i < length; i++) {
+            if (res.data[i].status === 1) {
+                s = "启用"
+                zz = "禁用"
+            } else {
+                s = "禁用"
+                zz = "启用"
+            }
+
+            html += "<tr>" +
+                "<td>" + res.data[i].id + "</td>" +
+                "<td>" + res.data[i].name + "</td>" +
+                "<td>" + res.data[i].answer + "</td>" +
+                "<td>" + res.data[i].fraction + "</td>" +
+                "<td>" + s + "</td>" +
+                "<td>" + res.data[i].operator + "</td>" +
+                "<td>" + res.data[i].updateTime[0] + "-" + res.data[i].updateTime[1] + "-" +
+                res.data[i].updateTime[2] + " , " + res.data[i].updateTime[3] + ":" +
+                res.data[i].updateTime[4] + ":" + res.data[i].updateTime[5] + "</td>" +
+                "<td>" + "<a href='#' onclick='editor(" + res.data[i].id + ")'>" + "编辑" + "</a>" + "|" +
+                "<a href='#' onclick='s(" + res.data[i].id + ")'>" + zz + "</a>" + "</td>" +
+                "</tr>"
+        }
+        tb.html(html);
+    }
+
+    /**
+     * 状态改变,废弃和启用
+     * @param id
+     */
+    function s(id) {
+        console.log(flag)
+        if (flag === 1) {
+            axios.delete("/choices/" + id).then(res => {
+                console.log(res)
+                console.log(res.data.code)
+                choice()
+                if (res.data.code === 0) {
+                    alert(res.data.msg)
+                }
+            }).catch(err => {
+                console.log(err)
+            })
+        } else if (flag === 2) {
+            axios.delete("/judgments/" + id).then(res => {
+                console.log(res)
+                console.log(res.data.code)
+                judgment()
+                if (res.data.code === 0) {
+                    alert(res.data.msg)
+                }
+            }).catch(err => {
+                console.log(err)
+            })
+        } else if (flag === 3) {
+            axios.delete("/solutions/" + id).then(res => {
+                console.log(res)
+                solution()
+                if (res.data.code === 0) {
+                    alert(res.data.msg)
+                }
+            }).catch(err => {
+                console.log(err)
+            })
+        } else {
+            alert("参数错误，请刷新页面重试")
+        }
+    }
+
+    /*通用传输*/
+    function myAjax(url, data, str) {
+        if (str === "get" || str === "GET") {
+            axios.get(url).then(re => {
+                console.log(re)
+                setHtml(re.data, re.data.data.length)
+                console.log(1111)
+                if (re.data.code === 0) {
+                    alert(re.data.msg)
+                }
+            }).catch(err => {
+                console.log("接口错误：" + err)
+            })
+        } else if (str === "post" || str === "POST") {
+            axios.post(url, data).then(res => {
+                console.log(res)
+                if (res.data.code === 0) {
+                    alert(res.data.msg)
+                }
+            }).catch(err => {
+                console.log("接口错误：" + err)
+            })
+        } else if (str === "put" || str === "PUT") {
+            axios.put(url, data).then(res => {
+                console.log(res)
+                if (res.data.code === 0) {
+                    alert(res.data.msg)
+                }
+            }).catch(err => {
+                console.log("接口错误：" + err)
+            })
+        } else if (str === "delete" || str === "DELETE") {
+            axios.delete(url).then(res => {
+                console.log(res)
+                if (res.data.code === 0) {
+                    alert(res.data.msg)
+                }
+            }).catch(err => {
+                console.log("接口错误：" + err)
+            })
+        }
+    }
+
+    function editor(id) {
+        location.href = "editorQuestion.html?id=" + id + "&flag=" + flag;
+    }
+</script>

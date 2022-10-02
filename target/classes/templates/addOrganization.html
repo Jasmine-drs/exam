@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>添加组织</title>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    {{message}}
+    <div>
+        <label for="name">名称：</label><input type="text" id="name" name="name" v-model="input.name">
+    </div>
+    <div v-show="flag != 1">
+        <label for="indexes">向上索引：</label><input type="text" name="indexes" id="indexes" v-model="input.indexes">
+    </div>
+    <div v-show="flag != 4">
+        <label for="indexBottom">向下索引：</label><input type="text" id="indexBottom" name="indexBottom" v-model="input.indexBottom">
+    </div>
+    <div>
+        <input type="button" value="提交" id="button" name="button" @click="save">
+    </div>
+</div>
+</body>
+</html>
+<script>
+    new Vue({
+        el:"#app",
+        data:{
+            message:"",
+            flag:0,
+            input:{
+                name:"",
+                indexes:"",
+                indexBottom:""
+            }
+        },
+        /*创建实例之后的钩子函数，获取路径变量*/
+        created() {
+            let href = location.href;
+            console.log(href);
+            /* 截取传递的参数 */
+            let s1 = href.substring(href.indexOf("=") + 1);
+            console.log(s1 + "=s1");
+            this.flag = Number(s1)
+            if (s1 === "1"){
+                this.message = "请添加一级组织"
+            }else if (s1 === "2"){
+                this.message = "请添加二级组织"
+            }else if (s1 === "3"){
+                this.message = "请添加三级组织"
+            }else if (s1 === "4"){
+                this.message = "请添加四级组织"
+            }else {
+                alert("参数错误，请刷新重试")
+            }
+        },
+        methods:{
+            /*保存*/
+            save(){
+                let data={
+                    "name":this.input.name,
+                    "indexes":this.input.indexes,
+                    "indexBottom":this.input.indexBottom,
+                }
+                if (this.flag === 1){
+                    this.myAjax("/areas",data)
+                }else if (this.flag === 2){
+                    this.myAjax("/school",data)
+                }else if (this.flag === 3){
+                    this.myAjax("/department",data)
+                }else if (this.flag === 4){
+                    this.myAjax("/classes",data)
+                }else {
+                    alert("参数错误，请刷新重试")
+                }
+            },
+            /*通用传输*/
+            myAjax(str,data){
+                console.log(data)
+                axios.post(str,data).then(res=>{
+                    alert("添加成功")
+                    window.close();//无用
+                    console.log(res)
+                }).catch(err=>{
+                    console.log("接口错误："+err)
+                })
+            }
+        },
+
+    })
+</script>

@@ -1,0 +1,11 @@
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (1, '计算机213', 1, 1, 1, '2022-08-25 16:12:48', '2022-08-25 16:12:52');
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (2, '计算机212', 1, 1, 1, '2022-08-25 16:12:48', '2022-08-25 16:12:53');
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (3, '计算机211', 1, 1, 1, '2022-08-25 16:12:48', '2022-08-25 16:12:53');
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (4, '医211', 2, 2, 1, '2022-08-25 16:12:49', '2022-08-25 16:12:53');
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (5, '医212', 2, 2, 1, '2022-08-25 16:12:49', '2022-08-25 16:12:53');
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (6, '医213', 2, 2, 1, '2022-08-25 16:12:50', '2022-08-25 16:12:54');
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (7, '中文211', 3, 3, 1, '2022-08-25 16:12:50', '2022-08-25 16:12:54');
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (8, '中文212', 3, 3, 1, '2022-08-25 16:12:50', '2022-08-25 16:12:54');
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (797360130, '测试', 2, 2, 1, '2022-09-15 21:18:55', '2022-09-15 21:18:55');
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (1128783873, '测试', 1, 1, 0, '2022-09-15 16:10:55', '2022-09-15 16:10:55');
+INSERT INTO exam.classes (id, name, indexes, index_bottom, status, creat_time, update_time) VALUES (1401356289, '444', 11, 11, 1, '2022-09-15 15:32:31', '2022-09-15 15:32:31');

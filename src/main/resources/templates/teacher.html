@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>教师页面</title>
+    <link href="../static/css/commonly.css" rel="stylesheet">
+</head>
+<body>
+
+<div id="app">
+    <div id="top">
+        <span>考试系统管理端</span>
+        <div style="float: right">欢迎您，{{message}}老师</div>
+    </div>
+    <div class="st" id="left">
+        <ul>
+            <li @click="question">题库</li>
+            <li @click="testPaper">组卷</li>
+            <li @click="view">预览</li>
+            <li @click="correct">批改</li>
+            <li @click="end">退出登录</li>
+        </ul>
+    </div>
+    <div class="st" id="right">
+        <iframe :src="iframeSrc" id="f">
+        </iframe>
+    </div>
+</div>
+</body>
+</html>
+
+<script src="../static/js/vue.js"></script>
+<script src="../static/js/axios.min.js"></script>
+
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            /*默认为人员管理页面*/
+            iframeSrc: "/templates/question.html",
+            message: "",
+        },
+        /*创建实例之后的钩子函数*/
+        created() {
+            let href = location.href;
+            console.log(href);
+            /* 截取传递的参数 */
+            let s1 = href.substring(href.indexOf("=") + 1);
+            console.log(s1 + "=s1");
+            /**
+             * 判断s1是否是数字
+             * @type {boolean}
+             */
+            let t = isNaN(Number(s1));
+            if (!t) {
+                axios.get("/users/" + s1).then(res => {
+                    this.message = res.data.data.name;
+                }).catch(err => {
+                    alert("请求错误：" + err);
+                })
+            } else {
+                alert("参数传递错误")
+            }
+        },
+        methods: {
+            /*题库*/
+            question: function () {
+                console.log(11)
+                this.iframeSrc = "/templates/question.html";
+            },
+            /*组卷*/
+            testPaper: function () {
+                console.log(22)
+                this.iframeSrc = "/templates/testPaper.html";
+            },
+            /*批改*/
+            correct: function () {
+                console.log(33)
+                this.iframeSrc = "/templates/correct.html";
+            },
+            /*预览*/
+            view: function () {
+                this.iframeSrc = "viewTestPaper.html";
+            },
+            /*退出登录*/
+            end: function () {
+                location.href = "login.html";
+            }
+        }
+    })
+</script>

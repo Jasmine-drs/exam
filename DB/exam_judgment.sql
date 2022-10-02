@@ -1,0 +1,2 @@
+INSERT INTO exam.judgment (id, name, answer, option_a, option_b, fraction, status, operator, type, creat_time, update_time) VALUES (1, '1+1=3', '错', '对', '错', 2, 1, '丁岱达', 2, '2022-09-03 16:48:34', '2022-09-09 09:14:29');
+INSERT INTO exam.judgment (id, name, answer, option_a, option_b, fraction, status, operator, type, creat_time, update_time) VALUES (1158135810, '7878-78=78', '错', '对', '错', 10, 1, '丁岱达', 2, '2022-09-06 09:58:16', '2022-09-09 09:14:48');

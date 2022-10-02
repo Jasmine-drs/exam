@@ -1,0 +1,36 @@
+.selectedDiv {
+    overflow: hidden;
+    float: left;
+    margin-top: 30px;
+}
+
+select {
+    width: 102px;
+    height: 25px;
+    line-height: 25px;
+    overflow: hidden;
+}
+
+#selectDiv {
+    border: darkblue solid 1px;
+    height: 150px;
+}
+
+#add {
+    float: right;
+}
+
+#add button {
+    float: right;
+    background-color: rgb(56, 137, 212);
+    color: white;
+    width: 100px;
+    height: 50px;
+    border: 0;
+    border-radius: 8px;
+    margin-top: 25px;
+}
+
+#div-table {
+    padding-top: 100px;
+}

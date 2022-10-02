@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>主页</title>
+    <link href="../static/css/commonly.css" rel="stylesheet">
+</head>
+<body>
+
+<div id="app">
+    <div id="top">
+        <span>考试系统管理端</span>
+        <div style="float: right">欢迎您，{{message}}</div>
+    </div>
+    <div class="st" id="left">
+        <ul>
+            <li @click="personnel">人员管理</li>
+            <li @click="organization">组织管理</li>
+            <li @click="simulation">模拟</li>
+            <li @click="end">退出登录</li>
+        </ul>
+    </div>
+    <div class="st" id="right">
+        <iframe :src="iframeSrc" id="f">
+        </iframe>
+    </div>
+</div>
+</body>
+</html>
+
+<script src="../static/js/vue.js"></script>
+<script src="../static/js/axios.min.js"></script>
+
+<script>
+
+    new Vue({
+        el: "#app",
+        data: {
+            /*默认为人员管理页面*/
+            iframeSrc: "/templates/personnel.html",
+            message: "",
+        },
+        /*创建实例之后的钩子函数*/
+        created() {
+            let href = location.href;
+            console.log(href);
+            /* 截取传递的参数 */
+            let s1 = href.substring(href.indexOf("=") + 1);
+            console.log(s1 + "=s1");
+            /**
+             * 判断 s1 是否是可转数字
+             * 可以辨别是点击增加员工还是编辑进入
+             * @type {boolean}
+             */
+            let t = isNaN(Number(s1));
+            if (!t) {
+                axios.get("/users/" + s1).then(res => {
+                    this.message = res.data.data.name;
+                }).catch(err => {
+                    alert("请求错误：" + err);
+                })
+            } else {
+                alert("参数传递错误")
+            }
+        },
+        methods: {
+            /*人员管理*/
+            personnel: function () {
+                console.log(3)
+                this.iframeSrc = "/templates/personnel.html";
+            },
+            /*组织管理*/
+            organization: function () {
+                this.iframeSrc = "/templates/organization.html";
+                console.log(2)
+            },
+            /*管理员模拟教师*/
+            simulation: function () {
+                console.log("1")
+            },
+            /*退出登录*/
+            end: function () {
+                location.href = "login.html";
+            }
+        }
+    })
+</script>

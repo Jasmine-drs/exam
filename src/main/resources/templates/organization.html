@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>组织管理</title>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <link href="../static/css/personnel.css" rel="stylesheet">
+    <link href="../static/css/organization.css" rel="stylesheet">
+    <script>
+        $(function () {
+            nextChange()
+            organizationFlag = 1
+        })
+    </script>
+</head>
+<body>
+<div>
+    <div id="selectDiv">
+        <div class="selectedDiv">
+            <label for="select_1">一级组织</label>
+            <select id="select_1" onchange="nextChange1()"></select>
+        </div>
+        <div class="selectedDiv">
+            <label for="select_2">二级组织：</label>
+            <select id="select_2" onchange="nextChange2()"></select>
+        </div>
+        <div class="selectedDiv">
+            <label for="select_3">三级组织：</label>
+            <select id="select_3" onchange="nextChange3()"></select>
+        </div>
+        <div class="selectedDiv">
+            <label for="select_4">四级组织：</label>
+            <select id="select_4"></select>
+        </div>
+    </div>
+    <div id="add" onclick="foc()">
+        <button onclick="addButton()" type="button">+新增</button>
+    </div>
+    <div id="div-table" onclick="foc()">
+        <table style="width: 100%">
+            <tr style="border: 1px solid">
+                <th>id</th>
+                <th>名称</th>
+                <th>向上索引</th>
+                <th>向下索引</th>
+                <th>状态</th>
+                <th>更新时间</th>
+                <th>操作</th>
+            </tr>
+            <tbody id="tb">
+            <tr>
+                <td colspan="6">暂无数据</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
+<!--layui 引用-->
+<script src="../static/layui-v2.6.8/layui/layui.js"></script>
+<script>
+
+    const select1 = document.getElementById("select_1");
+    const select2 = document.getElementById("select_2");
+    const select3 = document.getElementById("select_3");
+    const select4 = document.getElementById("select_4");
+
+    let tb = $("#tb");
+    let organizationFlag = 1    //  组织标志
+
+    /**
+     * 初始化一级组织
+     */
+    function nextChange() {
+        select1.options.length = 0
+        $.ajax({
+            url: "/areas/" + "all",
+            success(res) {
+                console.log(res);
+                if (res.code == 1) {
+                    let length = res.data.length;
+                    console.log(length)
+                    setHtml(res, length, select1)
+                } else {
+                    alert("无下级组织请添加")
+                }
+            },
+            error(err) {
+                alert("后端接口异常：" + err)
+            }
+        })
+    }
+
+    /*一级组织的逻辑*/
+    function nextChange1() {
+        organizationFlag = 2
+        select2.options.length = 0;
+        console.log(select1.value)
+        $.ajax({
+            url: "/areas",
+            data: {
+                "id": select1.value
+            },
+            success(res) {
+                console.log(res);
+                if (res.code == 1) {
+                    let length = res.data.length;
+                    console.log(length)
+                    setHtml(res, length, select2)
+                } else {
+                    alert("无下级组织请添加")
+                }
+            },
+            error(err) {
+                alert("后端接口异常：" + err)
+            }
+        })
+        console.log(organizationFlag)
+    }
+
+    /*二级组织的逻辑*/
+    function nextChange2() {
+        organizationFlag = 3
+        select3.options.length = 0;
+        console.log(select2.value)
+        $.ajax({
+            url: "/schools",
+            data: {
+                "id": select2.value
+            },
+            success(res) {
+                console.log(res);
+                if (res.code == 1) {
+                    let length = res.data.length;
+                    console.log(length)
+                    setHtml(res, length, select3)
+                } else {
+                    alert("无下级组织请添加")
+                }
+            },
+            error(err) {
+                alert("后端接口异常：" + err)
+            }
+        })
+        console.log(organizationFlag)
+    }
+
+    /*三级组织逻辑*/
+    function nextChange3() {
+        organizationFlag = 4
+        select4.options.length = 0;
+        console.log(select3.value)
+        $.ajax({
+            url: "/departments",
+            data: {
+                "id": select3.value
+            },
+            success(res) {
+                console.log(res);
+                if (res.code == 1) {
+                    let length = res.data.length;
+                    console.log(length)
+                    setHtml(res, length, select4)
+                } else {
+                    alert("无下级组织请添加")
+                }
+                console.log(select3.value)
+            },
+            error(err) {
+                alert("后端接口异常：" + err)
+            }
+        })
+        console.log(organizationFlag)
+    }
+
+    /**
+     * 设置表格
+     * @param res
+     * @param length
+     * @param select
+     */
+    function setHtml(res, length, select) {
+
+        let html = "暂无数据"
+        let s = ""
+        let zz = ""
+        let bottom = ""
+
+        for (let i = 0; i < length; i++) {
+            if (res.data[i].status === 1) {
+                s = "启用"
+                zz = "禁用"
+            } else {
+                s = "禁用"
+                zz = "启用"
+            }
+            if (res.data[i].indexBottom == null) {
+                bottom = "无"
+            } else {
+                bottom = res.data[i].indexBottom
+            }
+            if (organizationFlag === 1) {
+                let t = ""
+                t = bottom;
+                bottom = res.data[i].indexes;
+                res.data[i].indexes = t;
+            }
+            /*只允许启用的被选中*/
+            if (res.data[i].status === 1) {
+                select.options.add(new Option(res.data[i].name, res.data[i].id.toString(), false, true));  // 默认选中区
+            }
+            html += "<tr>" +
+                "<td>" + res.data[i].id + "</td>" +
+                "<td>" + res.data[i].name + "</td>" +
+                "<td>" + res.data[i].indexes + "</td>" +
+                "<td>" + bottom + "</td>" +
+                "<td>" + s + "</td>" +
+                "<td>" + res.data[i].updateTime[0] + "-" + res.data[i].updateTime[1] + "-" +
+                res.data[i].updateTime[2] + " , " + res.data[i].updateTime[3] + ":" +
+                res.data[i].updateTime[4] + ":" + res.data[i].updateTime[5] + "</td>" +
+                "<td>" +
+                /*"<a href='#' onclick='editor(" + res.data[i].id + ")'>" + "编辑" + "</a>" + "|" +*/
+                "<a href='#' onclick='s(" + res.data[i].id + ")'>" + zz + "</a></td>" +
+                "</tr>"
+        }
+        tb.html(html);
+        html = "暂无数据"
+        if (res.data.length === 0) {
+            alert("无下级组织，请添加")
+        }
+    }
+
+    /**
+     * 添加操作
+     */
+    function addButton() {
+        // window.open("text.html", "", "width=250,height=150");
+
+        //iframe 层
+        let open = layer.open({
+            type: 2,
+            title: '添加组织',
+            shadeClose: true,
+            shade: 0.8,
+            area: ['580px', '80%'],
+            content: '/templates/addOrganization.html?organizationFlag=' + organizationFlag //iframe的url
+        });
+
+    }
+
+    /**
+     * 修改状态
+     * @param id
+     */
+    function s(id) {
+        if (organizationFlag == 1) {
+            $.ajax({
+                url: "/areas/" + id,
+                success(res) {
+                    if (res.code == 1) {
+                        nextChange()
+                        console.log(1)
+                    } else {
+                        alert(res.msg)
+                    }
+                },
+                error(err) {
+                    alert("接口错误：" + err)
+                }
+            })
+        } else if (organizationFlag == 2) {
+            $.ajax({
+                url: "/schools/" + id,
+                success(res) {
+                    console.log(res)
+                    if (res.code == 1) {
+                        nextChange1()
+                        console.log(2)
+                    } else {
+                        alert(res.msg)
+                    }
+                },
+                error(err) {
+                    alert("接口错误：" + err)
+                }
+            })
+        } else if (organizationFlag == 3) {
+            $.ajax({
+                url: "/departments/" + id,
+                success(res) {
+                    if (res.code == 1) {
+                        nextChange2()
+                        console.log(3)
+                    } else {
+                        alert(res.msg)
+                    }
+                },
+                error(err) {
+                    alert("接口错误：" + err)
+                }
+            })
+        } else if (organizationFlag == 4) {
+            $.ajax({
+                url: "/classes/" + id,
+                success(res) {
+                    if (res.code == 1) {
+                        nextChange3()
+                        console.log(4)
+                    } else {
+                        alert(res.msg)
+                    }
+                },
+                error(err) {
+                    alert("接口错误：" + err)
+                }
+            })
+        } else {
+            alert("参数错误请刷新页面")
+        }
+    }
+
+    /**
+     * 设置退出添加弹窗后，页面自动刷新
+     */
+    function foc() {
+        console.log(1)
+        if (organizationFlag === 1) {
+            nextChange()
+        } else if (organizationFlag === 2) {
+            nextChange1()
+        } else if (organizationFlag === 3) {
+            nextChange2()
+        } else if (organizationFlag === 4) {
+            nextChange3()
+        } else {
+            alert("参数错误，请刷新页面")
+        }
+    }
+
+</script>

@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>登录</title>
+    <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+</head>
+<body>
+<div id="app">
+    <form action="#" id="f1">
+        <label>
+            账号：<input id="user-name" name="userName" type="text" v-model="Form.name">
+        </label>
+        <br>
+        <label>
+            密码：<input id="user-password" name="userPwd" type="password" v-model="Form.password">
+        </label>
+        <br>
+        <button @click="login" id="L" type="button">登录</button>
+        <span id="err" style="color: red">{{message}}</span>
+    </form>
+</div>
+</body>
+</html>
+<script>
+    new Vue({
+        el: "#app",
+        data: {
+            Form: {
+                name: "",
+                password: ""
+            },
+            message: "",
+            id: 0,
+        },
+        methods: {
+            login: function () {
+                axios.post("/users/" + this.Form.name + "/" + this.Form.password, {
+                    // params: {
+                    //     pwd: this.Form.password
+                    // }
+                }).then(res => {
+                    console.log(res);
+                    if (res.data.code === 1 && res.data.data.type === 0) {
+                        this.id = res.data.data.id;
+                        /*跳转到管理员页面*/
+                        location.href = "/templates/index.html?id=" + this.id;
+                    } else if (res.data.code === 1 && res.data.data.type === 1) {
+                        this.id = res.data.data.id;
+                        /*跳转到教师首页*/
+                        location.href = "/templates/teacher.html?id=" + this.id;
+                    } else {
+                        console.log(res.data.code)
+                        this.message = res.data.msg;
+                    }
+                }).catch(err => {
+                    alert(err);
+                })
+            }
+        }
+    });
+
+    function login() {
+        let name;
+        let pwd;
+        name = $("#user-name");
+        pwd = $("#user-password");
+        console.log(name.val());
+        console.log(pwd.val());
+        $.ajax({
+            url: "/users",
+            data: {"name": name.val(), "pwd": pwd.val()},
+            success: function (date) {
+                if (date === "true") {
+                    console.log(date)
+                    location.href = "/templates/index.html";
+                } else {
+                    location.href = "/templates/error.html";
+                }
+            },
+            error: function () {
+                alert("连接失败！");
+            }
+        })
+    }
+</script>

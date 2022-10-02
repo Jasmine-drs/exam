@@ -1,0 +1,3 @@
+INSERT INTO exam.solution (id, name, answer, fraction, status, operator, type, creat_time, update_time) VALUES (-1006125055, '请写出键盘D键和G键之间的键的名字以及证明过程', 'F', 10, 1, '丁岱达', 3, '2022-09-06 09:58:55', '2022-09-06 09:58:55');
+INSERT INTO exam.solution (id, name, answer, fraction, status, operator, type, creat_time, update_time) VALUES (1, '甲、乙两队共同修一条长400米的公路，甲队从东往西修4天，乙队从西往东修5天，正好修完，甲队比乙队每天多修10米。甲、乙两队每天共修多少米？', '甲乙两队每天共修的米数：40×2+10=80+10=90（米）', 20, 1, '丁岱达', 3, '2022-09-03 17:09:47', '2022-09-08 17:23:01');
+INSERT INTO exam.solution (id, name, answer, fraction, status, operator, type, creat_time, update_time) VALUES (2131165185, '光刻机怎么才能实现突破', '略', 10, 1, '丁岱达', 3, '2022-09-15 15:42:46', '2022-09-15 15:43:36');

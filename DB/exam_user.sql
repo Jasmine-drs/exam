@@ -1,0 +1,9 @@
+INSERT INTO exam.user (id, name, user_name, password, sex, age, phone, type, status, creat_time, update_time) VALUES (-1052254206, '1+1=', '5555', '5', '女', 89, '11111', 0, 1, '2022-09-15 16:08:40', '2022-09-15 16:08:54');
+INSERT INTO exam.user (id, name, user_name, password, sex, age, phone, type, status, creat_time, update_time) VALUES (-599326719, '111', '7777', '7', '女', 3, '33333', 1, 1, '2022-09-15 15:30:43', '2022-09-15 16:07:43');
+INSERT INTO exam.user (id, name, user_name, password, sex, age, phone, type, status, creat_time, update_time) VALUES (-427397118, 'admin222', '12', '12', '男', 23, '33333', 1, 1, '2022-08-24 16:31:24', '2022-08-24 18:37:08');
+INSERT INTO exam.user (id, name, user_name, password, sex, age, phone, type, status, creat_time, update_time) VALUES (1, '邓荣松', '123', '123', '男', 20, '15183145500', 0, 1, '2022-08-04 17:39:38', '2022-08-04 17:39:44');
+INSERT INTO exam.user (id, name, user_name, password, sex, age, phone, type, status, creat_time, update_time) VALUES (2, '丁岱达', '1', '1', '女', 19, '19865623526', 1, 0, '2022-08-22 16:22:47', '2022-08-22 16:22:49');
+INSERT INTO exam.user (id, name, user_name, password, sex, age, phone, type, status, creat_time, update_time) VALUES (3, 'admin333', '2', '56', '男', 56, '33333', 0, 1, '2022-08-23 17:10:10', '2022-08-24 18:29:01');
+INSERT INTO exam.user (id, name, user_name, password, sex, age, phone, type, status, creat_time, update_time) VALUES (4, '聂凡娆', '3', '3', '女', 20, '16968594253', 1, 1, '2022-08-23 17:24:07', '2022-08-23 17:24:33');
+INSERT INTO exam.user (id, name, user_name, password, sex, age, phone, type, status, creat_time, update_time) VALUES (42414082, '冯凡娆', '89', '89', '男', 23, '22222', 1, 1, '2022-08-24 18:29:56', '2022-09-15 15:29:44');
+INSERT INTO exam.user (id, name, user_name, password, sex, age, phone, type, status, creat_time, update_time) VALUES (520536066, '777', '8888', '8', '男', 23, '33333', 0, 0, '2022-09-15 21:15:31', '2022-09-15 21:15:31');

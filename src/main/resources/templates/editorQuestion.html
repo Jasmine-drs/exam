@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>修改题目</title>
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/js/http_code.jquery.com_jquery-1.12.4.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+
+</head>
+<body>
+<div id="app">
+    <div>
+        <a href="#" onclick="f()">< - 返回</a>
+    </div>
+    <div>{{message}}</div>
+    <br>
+    <div>
+        <div id="question_name">
+            <label for="name">题目：</label>
+            <textarea id="name" name="name" v-model="question.name"></textarea>
+        </div>
+        <br>
+        <div id="question_options" v-show="flag != 3">
+            <div id="choice" v-show="flag == 1">
+                <label for="choice_optionA">A:</label>
+                <input id="choice_optionA" name="choice_optionA" type="text" v-model="question.optionA">
+                <label for="choice_optionB">B:</label>
+                <input id="choice_optionB" name="choice_optionB" type="text" v-model="question.optionB">
+                <label for="choice_optionC">C:</label>
+                <input id="choice_optionC" name="choice_optionC" type="text" v-model="question.optionC">
+                <label for="choice_optionD">D:</label>
+                <input id="choice_optionD" name="choice_optionD" type="text" v-model="question.optionD">
+            </div>
+            <div id="judgment" v-show="flag == 2">
+                <label for="judgment_optionA">判断一：</label>
+                <input id="judgment_optionA" name="judgment_optionA" type="text" v-model="question.optionA">
+                <label for="judgment_optionB">判断二：</label>
+                <input id="judgment_optionB" name="judgment_optionB" type="text" v-model="question.optionB">
+            </div>
+        </div>
+        <br>
+        <div id="question_answer">
+            <label for="answer">答案：</label>
+            <textarea id="answer" name="answer" v-model="question.answer"></textarea>
+        </div>
+        <br>
+        <div id="question_fraction">
+            <label for="fraction">分数：</label>
+            <input id="fraction" name="fraction" type="text" v-model="question.fraction">
+        </div>
+        <br>
+        <div>
+            <button @click="save">提交</button>
+        </div>
+    </div>
+
+</div>
+</body>
+</html>
+
+<script>
+    /* 获取当前页面的地址 */
+    let href = location.href;
+    let topHref = top.location.href;
+    console.log(href);
+    /* 截取传递的参数 */
+    let id = href.substring(href.indexOf("=") + 1, href.indexOf("&"));//    题目id
+    let flag = href.substring(href.lastIndexOf("=") + 1);// 题型
+    let topId = topHref.substring(topHref.indexOf("=") + 1);//    操作员id
+    console.log(topId)
+    console.log(id + "=id");
+    console.log(flag + "=flag");
+
+    /**
+     * 返回上级页面
+     */
+    function f() {
+        location.href = "question.html";
+        // location.href = document.referrer;//返回上一级页面并初始化页面
+        // window.history.go(-1);//返回上一级页面，不会初始化
+        // self.location=document.referrer//返回上一级，初始化页面
+
+    }
+
+    /*初始化页面数据*/
+    $(function () {
+        /*数据回填*/
+        if (flag === "1") {
+            v.message = "选择题:"
+            v.myAjax("/choices/" + id, null, "GET")
+        } else if (flag === "2") {
+            v.message = "判断题:"
+            v.myAjax("/judgments/" + id, null, "GET")
+        } else if (flag === "3") {
+            v.message = "解答题:"
+            v.myAjax("/solutions/" + id, null, "GET")
+        }
+        axios.get("/users/" + topId).then(res => {
+            console.log(res)
+            v.question.operator = res.data.data.name;
+        }).catch(err => {
+            console.log("接口错误：" + err)
+        })
+
+    })
+
+    let v = new Vue({
+        el: "#app",
+        data: {
+            flag: flag,
+            question: {
+                id: "",
+                name: "",
+                answer: "",
+                optionA: "",
+                optionB: "",
+                optionC: "",
+                optionD: "",
+                fraction: "",
+                operator: ""
+            },
+            message: ""
+        },
+        methods: {
+            save() {
+                if (flag === "1") {
+                    this.myAjax("/choices", this.question, "POST");
+                } else if (flag === "2") {
+                    this.myAjax("/judgments", this.question, "POST");
+                } else if (flag === "3") {
+                    this.myAjax("/solutions", this.question, "POST");
+                }
+            },
+            /*通用传输*/
+            myAjax(url, data, str) {
+                if (str === "get" || str === "GET") {
+                    axios.get(url).then(re => {
+                        console.log(re)
+                        if (re.data.code === 0) {
+                            alert(re.data.msg)
+                            f()
+                        }
+                        this.question.id = re.data.data.id;
+                        this.question.name = re.data.data.name;
+                        this.question.answer = re.data.data.answer;
+                        this.question.optionA = re.data.data.optionA;
+                        this.question.optionB = re.data.data.optionB;
+                        this.question.optionC = re.data.data.optionC;
+                        this.question.optionD = re.data.data.optionD;
+                        this.question.fraction = re.data.data.fraction;
+                    }).catch(err => {
+                        console.log("接口错误：" + err)
+                    })
+                } else if (str === "post" || str === "POST") {
+                    axios.post(url, data).then(res => {
+                        console.log(res)
+                        if (res.data.code === 0) {
+                            alert(res.data.msg)
+                        } else {
+                            alert(res.data.data)
+                        }
+                    }).catch(err => {
+                        console.log("接口错误：" + err)
+                    })
+                } else if (str === "put" || str === "PUT") {
+                    axios.put(url, data).then(res => {
+                        console.log(res)
+                        if (res.data.code === 0) {
+                            alert(res.data.msg)
+                        }
+                    }).catch(err => {
+                        console.log("接口错误：" + err)
+                    })
+                } else if (str === "delete" || str === "DELETE") {
+                    axios.delete(url).then(res => {
+                        console.log(res)
+                        if (res.data.code === 0) {
+                            alert(res.data.msg)
+                        }
+                    }).catch(err => {
+                        console.log("接口错误：" + err)
+                    })
+                }
+            }
+        }
+    })
+</script>

@@ -1,0 +1,572 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>组卷页面</title>
+    <link rel="stylesheet" href="../static/css/personnel.css">
+    <script src="../static/js/vue.js"></script>
+    <script src="../static/js/http_code.jquery.com_jquery-1.12.4.js"></script>
+    <script src="../static/js/axios.min.js"></script>
+    <script>
+        $(function () {
+            /*初始化时隐藏第二部分*/
+            $('#second').hide()
+            /*刷新题目列表*/
+            choice()
+            /*初始化组织下拉框*/
+            nextChange()
+            organizationFlag = 1
+            /*获取账号姓名*/
+            axios.get("/users/" + topId).then(res => {
+                console.log(res)
+                v.exam.operator = res.data.data.name;
+                v.examPaper.operator = res.data.data.name;
+            }).catch(err => {
+                console.log("接口错误：" + err)
+            })
+        })
+    </script>
+</head>
+<body>
+<div id="app">
+    <div id="first">
+        组卷第一步，请先设置试卷基本信息：<br>
+        <div>
+            <label for="name">试卷名（标题）：</label><input type="text" id="name" v-model="exam.name">
+        </div>
+        <div>
+            <label for="batch">场次安排：</label><input type="text" id="batch" v-model="exam.batch">
+        </div>
+        <div>
+            <label for="info">试卷说明（可以不写）：</label><input type="text" id="info" v-model="exam.info">
+        </div>
+        选择试卷归属：<br>
+        <div id="selectDiv">
+            <div class="selectedDiv">
+                <label for="select_1">一级组织</label>
+                <select id="select_1" onchange="nextChange1()" v-model="exam.primaryOrganization"></select>
+            </div>
+            <div class="selectedDiv">
+                <label for="select_2">二级组织：</label>
+                <select id="select_2" onchange="nextChange2()" v-model="exam.secondaryOrganization"></select>
+            </div>
+            <div class="selectedDiv">
+                <label for="select_3">三级组织：</label>
+                <select id="select_3" onchange="nextChange3()" v-model="exam.tertiaryOrganization"></select>
+            </div>
+            <div class="selectedDiv">
+                <label for="select_4">四级组织：</label>
+                <select id="select_4" v-model="exam.fourOrganization"></select>
+            </div>
+        </div>
+        <div>
+            <label for="start_time">考试开始时间：</label><input type="text" id="start_time" v-model="exam.startTime"
+                                                          autocomplete="off">
+        </div>
+        <div>
+            <label for="end_time">考试结束时间：</label><input type="text" id="end_time" v-model="exam.endTime"
+                                                        autocomplete="off">
+        </div>
+        <button @click="firstHide">确定</button>
+    </div>
+    <div id="second">
+        组卷第二步，请选择题目：<br>
+        <div id="que">
+            <button onclick="choice()">单选题</button>
+            <button onclick="judgment()">判断题</button>
+            <button onclick="solution()">解答题</button>
+        </div>
+        <div id="top-right">
+            <button onclick="addExamPaper()">完成</button>
+        </div>
+        <div id="div-table" onclick="foc()">
+            <table style="width: 100%">
+                <tr style="border: 1px solid">
+                    <th>选项</th>
+                    <th>id</th>
+                    <th>题目</th>
+                    <th>答案</th>
+                    <th>分数</th>
+                    <th>状态</th>
+                    <th>操作员</th>
+                    <th>更新时间</th>
+                    <th>操作</th>
+                </tr>
+                <tbody id="tb">
+                <tr>
+                    <td colspan="8">暂无数据</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<!--laydate 引用-->
+<script src="../static/laydate/laydate.js"></script>
+<!--layui 引用-->
+<script src="../static/layui-v2.6.8/layui/layui.js"></script>
+<script>
+
+    let topHref = top.location.href;
+    let topId = topHref.substring(topHref.indexOf("=") + 1);//    操作员id
+
+    let flag = 0;// 标识题目类型
+    let organizationFlag = 1    //  组织标志
+
+    /*设置两个日期控件*/
+    laydate.render({
+        elem: '#start_time',
+        type: 'datetime',
+        done: function (value, date) {
+            v.exam.startTime = value;
+        }
+    });
+    laydate.render({
+        elem: '#end_time',
+        type: 'datetime',
+        done: function (value, date) {
+            v.exam.endTime = value;
+        }
+    });
+
+    let v = new Vue({
+        el: "#app",
+        data: {
+            exam: {
+                name: "",
+                batch: "",
+                info: "",
+                startTime: [],
+                endTime: [],
+                primaryOrganization: "",
+                secondaryOrganization: "",
+                tertiaryOrganization: "",
+                fourOrganization: "",
+                operator: ""
+            },
+            examPaper: {
+                examId: "",
+                questionId: "",
+                type: "",
+                operator: "",
+                sequence: 1
+            },
+        },
+        methods: {
+            firstHide() {
+                myAjax("/exams", this.exam, "POST")
+
+                $('#first').hide()//隐藏第一部分
+                $('#second').toggle()//显示或隐藏第二部分
+            }
+        }
+    })
+
+    const select1 = document.getElementById("select_1");
+    const select2 = document.getElementById("select_2");
+    const select3 = document.getElementById("select_3");
+    const select4 = document.getElementById("select_4");
+
+    /**
+     * 初始化一级组织
+     */
+    function nextChange() {
+        select1.options.length = 0
+        $.ajax({
+            url: "/areas/" + "all",
+            success(res) {
+                console.log(res);
+                if (res.code == 1) {
+                    let length = res.data.length;
+                    console.log(length)
+                    setOptions(res, length, select1)
+                }
+            },
+            error(err) {
+                alert("后端接口异常：" + err)
+            }
+        })
+    }
+
+    /*一级组织的逻辑*/
+    function nextChange1() {
+        organizationFlag = 2
+        select2.options.length = 0;
+        console.log(select1.value)
+        $.ajax({
+            url: "/areas",
+            data: {
+                "id": select1.value
+            },
+            success(res) {
+                console.log(res);
+                if (res.code == 1) {
+                    let length = res.data.length;
+                    console.log(length)
+                    setOptions(res, length, select2)
+                } else {
+                    alert("无下级组织请添加")
+                }
+            },
+            error(err) {
+                alert("后端接口异常：" + err)
+            }
+        })
+        console.log(organizationFlag)
+    }
+
+    /*二级组织的逻辑*/
+    function nextChange2() {
+        organizationFlag = 3
+        select3.options.length = 0;
+        console.log(select2.value)
+        $.ajax({
+            url: "/schools",
+            data: {
+                "id": select2.value
+            },
+            success(res) {
+                console.log(res);
+                if (res.code == 1) {
+                    let length = res.data.length;
+                    console.log(length)
+                    setOptions(res, length, select3)
+                } else {
+                    alert("无下级组织请添加")
+                }
+            },
+            error(err) {
+                alert("后端接口异常：" + err)
+            }
+        })
+        console.log(organizationFlag)
+    }
+
+    /*三级组织逻辑*/
+    function nextChange3() {
+        organizationFlag = 4
+        select4.options.length = 0;
+        console.log(select3.value)
+        $.ajax({
+            url: "/departments",
+            data: {
+                "id": select3.value
+            },
+            success(res) {
+                console.log(res);
+                if (res.code == 1) {
+                    let length = res.data.length;
+                    console.log(length)
+                    setOptions(res, length, select4)
+                } else {
+                    alert("无下级组织请添加")
+                }
+                console.log(select3.value)
+            },
+            error(err) {
+                alert("后端接口异常：" + err)
+            }
+        })
+        console.log(organizationFlag)
+    }
+
+    /**
+     * 设置option项
+     * @param res
+     * @param length
+     * @param select
+     */
+    function setOptions(res, length, select) {
+        for (let i = 0; i < length; i++) {
+            /*只允许启用的被选中*/
+            if (res.data[i].status === 1) {
+                select.options.add(new Option(res.data[i].name, res.data[i].id.toString(), false, true));  // 默认选中区
+            }
+        }
+    }
+
+    /**
+     * 单选题
+     */
+    function choice() {
+        flag = 1;//改变题目的标志
+        myAjax("/choices", null, "get")//获取选择题列表
+
+        /*间隔一段时间再执行，复选框的数据回填，否则会被上面刷新从而看不见效果*/
+        setTimeout(function () {
+            /*t获取所有复选框的值*/
+            $("tbody input[type=checkbox]").each(function (i) {
+                t[i] = parseInt($(this).closest('tr').find('td[name=amount]').text().trim());
+            });
+            /*total1为上一次勾选的复选框的数组，与全部值进行比较，相同则设置checked打勾*/
+            for (let j = 0; j < total1.length; j++) {
+                for (let k = 0; k < t.length; k++) {
+                    if (total1[j] === t[k]) {
+                        $("tbody input[type=checkbox]:eq(" + k + ")").prop("checked", true)//设置checked
+                    }
+                }
+            }
+        }, 100);
+    }
+
+    /**
+     * 判断题
+     */
+    function judgment() {
+        flag = 2;
+        myAjax("/judgments", null, "get")
+        /*间隔一段时间再执行，复选框的数据回填，否则会被上面刷新从而看不见效果*/
+        setTimeout(function () {
+            $("tbody input[type=checkbox]").each(function (i) {
+                t[i] = parseInt($(this).closest('tr').find('td[name=amount]').text().trim());
+            });
+            for (let j = 0; j < total2.length; j++) {
+                for (let k = 0; k < t.length; k++) {
+                    if (total2[j] === t[k]) {
+                        $("tbody input[type=checkbox]:eq(" + k + ")").prop("checked", true)
+                    }
+                }
+            }
+        }, 100);
+    }
+
+    /**
+     * 解答题
+     */
+    function solution() {
+        flag = 3;
+        myAjax("/solutions", null, "get")
+        /*间隔一段时间再执行，复选框的数据回填，否则会被上面刷新从而看不见效果*/
+        setTimeout(function () {
+            $("tbody input[type=checkbox]").each(function (i) {
+                t[i] = parseInt($(this).closest('tr').find('td[name=amount]').text().trim());
+            });
+            for (let j = 0; j < total3.length; j++) {
+                for (let k = 0; k < t.length; k++) {
+                    if (total3[j] === t[k]) {
+                        $("tbody input[type=checkbox]:eq(" + k + ")").prop("checked", true)
+                    }
+                }
+            }
+        }, 100);
+    }
+
+    let tb = $("#tb");
+
+    /**
+     * 设置表格
+     * @param res
+     * @param length
+     */
+    function setHtml(res, length) {
+        let html = "暂无数据"
+        let s = "启用"
+        for (let i = 0; i < length; i++) {
+            if (res.data[i].status === 1) {
+                html += "<tr>" +
+                    "<td><input type='checkbox' name='' class='check_amount' onchange='checkAmount()'></td>" +
+                    "<td name='amount'>" + res.data[i].id + "</td>" +
+                    "<td>" + res.data[i].name + "</td>" +
+                    "<td>" + res.data[i].answer + "</td>" +
+                    "<td>" + res.data[i].fraction + "</td>" +
+                    "<td>" + s + "</td>" +
+                    "<td>" + res.data[i].operator + "</td>" +
+                    "<td>" + res.data[i].updateTime[0] + "-" + res.data[i].updateTime[1] + "-" +
+                    res.data[i].updateTime[2] + " , " + res.data[i].updateTime[3] + ":" +
+                    res.data[i].updateTime[4] + ":" + res.data[i].updateTime[5] + "</td>" +
+                    "<td>" + "<a href='#' onclick='editor(" + res.data[i].id + ")'>" + "编辑" + "</a>" + "</td>" +
+                    "</tr>"
+            }
+        }
+        tb.html(html);
+    }
+
+    /*通用传输*/
+    function myAjax(url, data, str) {
+        if (str === "get" || str === "GET") {
+            axios.get(url).then(re => {
+                console.log(re)
+                setHtml(re.data, re.data.data.length)
+                console.log(1111)
+                if (re.data.code === 0) {
+                    alert(re.data.msg)
+                }
+            }).catch(err => {
+                console.log("接口错误：" + err)
+            })
+        } else if (str === "post" || str === "POST") {
+            axios.post(url, data).then(res => {
+                console.log(res)
+                v.examPaper.examId = res.data.data
+                if (res.data.code === 0) {
+                    alert(res.data.msg)
+                }
+            }).catch(err => {
+                console.log("接口错误：" + err)
+                alert("接口错误：" + err)
+                location.reload()
+            })
+        } else if (str === "put" || str === "PUT") {
+            axios.put(url, data).then(res => {
+                console.log(res)
+                if (res.data.code === 0) {
+                    alert(res.data.msg)
+                }
+            }).catch(err => {
+                console.log("接口错误：" + err)
+            })
+        } else if (str === "delete" || str === "DELETE") {
+            axios.delete(url, data).then(res => {
+                console.log(res)
+                if (res.data.code === 0) {
+                    alert(res.data.msg)
+                }
+            }).catch(err => {
+                console.log("接口错误：" + err)
+            })
+        }
+    }
+
+    /**
+     * 编辑操作
+     * @param id 被编辑题目的id
+     */
+    function editor(id) {
+        // location.href = "editorQuestion.html?id=" + id + "&flag=" + flag;
+        //iframe 层
+        let open = layer.open({
+            type: 2,
+            title: '添加组织',
+            shadeClose: true,
+            shade: 0.8,
+            area: ['880px', '85%'],
+            content: "editorQuestion.html?id=" + id + "&flag=" + flag //iframe的url
+        });
+    }
+
+    //三个不同题型id数组
+    let total1 = [];
+    let total2 = [];
+    let total3 = [];
+    let t = [];
+    let order = 1;//    题目顺序
+
+    /**
+     * 获取题目id数组
+     * 并添加、删除所选题目
+     */
+    function checkAmount() {
+        // de.length = 0;
+        let i = 0;
+        if (flag === 1) {
+            /*刷新上一次勾选的数组*/
+            total1.length = 0;
+            /*更新题目类型*/
+            v.examPaper.type = 1;
+            //每次都是对新的数组进行添加，这样就可以实现勾选和取消操作
+            $("tbody input[type=checkbox]:checked").each(function (i) {
+                console.log(i)
+                total1[i] = parseInt($(this).closest('tr').find('td[name=amount]').text().trim()); //get td value
+                v.examPaper.questionId = total1[i];
+                v.examPaper.sequence = order++;
+                myAjax("/examPapers", v.examPaper, "POST")
+
+            });
+            deletedById(total1, flag);
+            console.log(total1)
+            console.log("to1")
+        } else if (flag === 2) {
+            /*刷新上一次勾选的数组*/
+            total2.length = 0;
+            /*更新题目类型*/
+            v.examPaper.type = 2;
+            //loop through checked checkbox
+            $("tbody input[type=checkbox]:checked").each(function (i) {
+                total2[i] = parseInt($(this).closest('tr').find('td[name=amount]').text().trim()); //get td value
+                v.examPaper.questionId = total2[i];
+                v.examPaper.sequence = order++;
+                myAjax("/examPapers", v.examPaper, "POST")
+            });
+            deletedById(total2, flag);
+            console.log(total2)
+            console.log("to2")
+        } else {
+            /*刷新上一次勾选的数组*/
+            total3.length = 0;
+            /*更新题目类型*/
+            v.examPaper.type = 3;
+            //loop through checked checkbox
+            $("tbody input[type=checkbox]:checked").each(function (i) {
+                total3[i] = parseInt($(this).closest('tr').find('td[name=amount]').text().trim()); //get td value
+                v.examPaper.questionId = total3[i];
+                v.examPaper.sequence = order++;
+                myAjax("/examPapers", v.examPaper, "POST")
+            });
+            deletedById(total3, flag);
+            console.log(total3)
+            console.log("to3")
+        }
+    }
+
+    /**
+     * 设置退出添加弹窗后，表格刷新
+     */
+    function foc() {
+        if (flag === 1) {
+            choice()
+        } else if (flag === 2) {
+            judgment()
+        } else if (flag === 3) {
+            solution()
+        } else {
+            alert("参数错误，请刷新页面")
+        }
+    }
+
+    function addExamPaper() {
+        if (total1.length === 0 && total2.length === 0 && total3.length === 0) {
+            alert("最少添加一道题")
+            return;
+        }
+        alert("试卷添加已完成,请转到预览页查看")
+        location.href = "viewTestPaper.html"
+    }
+
+    /**
+     * 通过id删除试卷中对应的题目
+     * @param total
+     * @param flag 题目类型
+     */
+    function deletedById(total, flag) {
+        let temp = [];
+        /*获取所有复选框的值*/
+        $("tbody input[type=checkbox]").each(function (i) {
+            temp[i] = parseInt($(this).closest('tr').find('td[name=amount]').text().trim());
+        });
+        console.log(temp, "temp")
+        console.log(total, "total")
+        /*去除temp中选中的元素，获取复选框未被选中的值*/
+        let split = temp.filter(function (val) {
+            return total.indexOf(val) === -1;
+        });
+        console.log(split)
+
+        //获取复选框未被选中的值
+        // de = $("table input:checkbox").not("input:checked").closest('tr').find('td[name=amount]').text().trim();   //获取未被选择的复选框
+        // let split = de.split('');
+        for (let j = 0; j < split.length; j++) {
+            // let id = parseInt(split[j]);
+            let t = split[j];
+            // myAjax("/examPapers/" + split[j] + "/" + flag, null, "DELETE")
+            myAjax("/examPapers", {
+                params:{
+                    id:t,
+                    "flag":flag,
+                    examId:v.examPaper.examId
+                }
+                }, "DELETE")
+        }
+    }
+</script>

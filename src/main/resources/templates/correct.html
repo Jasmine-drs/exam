@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>批改页面</title>
+    <script src="../static/js/http_code.jquery.com_jquery-1.12.4.js"></script>
+</head>
+<body>
+<div id="app">
+    <div id="first">
+        以下为你名下所有试卷：
+        <div v-for="(exam,i) in exams">
+            <button @click="examButton(exam.id)">{{exam.name}}</button>
+        </div>
+    </div>
+    <div id="second">
+        以下为试卷题目以及学生所作答案，请根据题目下方的标准答案进行批改：
+        <div>现在共有 <span style="color: red">{{studentLength}}</span> 名学生完成试卷</div>
+        <div>正在批改 <span style="color: lightcoral">{{students[0].nickName}}</span> 的试卷</div>
+        <div v-for="(examPaper,i) in examPapers">
+            <div style="border: 1px solid #219bc4">
+                <div v-if="examPaper.type == 1">选择题：</div>
+                <div v-if="examPaper.type == 2">判断题：</div>
+                <div v-if="examPaper.type == 3">简答题：</div>
+                <p>第{{i+1}}题、{{examPaper.name}} &nbsp;&nbsp; ({{examPaper.fraction}}分)</p>
+                <div class="options">
+                    <div v-if="examPaper.type == 1">
+                        A.{{examPaper.optionA}}&nbsp;&nbsp;
+                        B.{{examPaper.optionB}}&nbsp;&nbsp;
+                        C.{{examPaper.optionC}}&nbsp;&nbsp;
+                        D.{{examPaper.optionD}}&nbsp;&nbsp;
+                    </div>
+                </div>
+                <p>标准答案：{{examPaper.answer}}</p>
+                <p>学生答案：{{studentAnswer[i].answer}}</p>
+            </div>
+            <div style="height: 20px"></div>
+        </div>
+        <div>
+            <label for="answer">批改成绩：</label><input id="answer" type="text">
+            <button @click="postAnswer">提交</button>
+        </div>
+    </div>
+</div>
+</body>
+</html>
+<script src="../static/js/vue.js"></script>
+<script src="../static/js/axios.min.js"></script>
+<script>
+    let topHref = top.location.href;
+    let topId = topHref.substring(topHref.indexOf("=") + 1);//    操作员id
+    let examId = 0;
+
+    let v = new Vue({
+        el: "#app",
+        data: {
+            type: "",
+            operator: "",
+            exams: [{examId: ""}],//    试卷基本信息
+            examPapers: [],//    试卷题目
+            students: [{nickName: ""}],//       做了该试卷的学生信息
+            studentAnswer: [{answer: ""}],//     学生的答案
+            studentLength: '',//     学生集合的长度
+            result: {
+                examId: "",
+                nickName: "",
+                achievement: ""
+            }
+        },
+        created() {
+            /*初始化时隐藏第二部分*/
+            $('#second').hide()
+            /*获取该账号老师的名字*/
+            this.myAjax("/users/" + topId, null, "GET");
+        },
+        methods: {
+            /*通用传输*/
+            myAjax(url, data, str) {
+                if (str === "get" || str === "GET") {
+                    axios.get(url).then(re => {
+                        console.log(re)
+                        this.operator = re.data.data.name;
+                        console.log(this.operator)
+                        /*拿到创建人，查询该创建人名下的所有试卷*/
+                        axios.get('/exams/' + this.operator).then(res => {
+                            console.log(res);
+                            this.exams = res.data.data;
+
+                            console.log(this.exams)
+                            /*获取所有学生*/
+                            axios.get("/students").then(res => {
+                                console.log(res)
+                                this.students = res.data.data;
+                                this.studentLength = this.students.length;
+                                this.result.nickName = this.students[0].nickName;
+
+                            })
+                        })
+                        console.log(1111)
+                        if (re.data.code === 0) {
+                            alert(re.data.msg)
+                        }
+                    }).catch(err => {
+                        console.log("接口错误：" + err)
+                    })
+                } else if (str === "post" || str === "POST") {
+                    axios.post(url, data).then(res => {
+                        console.log(res)
+                        if (res.data.code === 0) {
+                            alert(res.data.msg)
+                        }
+                    }).catch(err => {
+                        console.log("接口错误：" + err)
+                    })
+                } else if (str === "put" || str === "PUT") {
+                    axios.put(url, data).then(res => {
+                        console.log(res)
+                        if (res.data.code === 0) {
+                            alert(res.data.msg)
+                        }
+                    }).catch(err => {
+                        console.log("接口错误：" + err)
+                    })
+                } else if (str === "delete" || str === "DELETE") {
+                    axios.delete(url).then(res => {
+                        console.log(res)
+                        if (res.data.code === 0) {
+                            alert(res.data.msg)
+                        }
+                    }).catch(err => {
+                        console.log("接口错误：" + err)
+                    })
+                }
+            },
+            examButton(id) {
+                $('#first').hide()//隐藏第一部分
+                $('#second').toggle()//反转第二部分的状态
+                examId = id;
+                console.log(examId)
+                /*获取题目内容*/
+                axios.get("/examPapers/" + id).then(res => {
+                    console.log(res);
+                    this.examPapers = res.data.data
+                })
+                /*获取该学生的答案*/
+                for (let i = 0; i < this.students.length; i++) {
+                    console.log(this.exams[0].id)
+                    console.log(this.students[i].nickName)
+                    // let nickName=this.students[i].nickName
+                    axios.get("/studentAnswers", {
+                        params: {
+                            nickName: this.students[i].nickName,
+                            examId: examId
+                        }
+                    }).then(res => {
+                        console.log(res)
+                        this.studentAnswer = res.data.data;
+                        console.log(this.studentAnswer)
+                    })
+                }
+            },
+            /*提交成绩*/
+            postAnswer() {
+                let answer = $('#answer');
+                console.log(answer.val())
+                this.result.achievement = answer.val()
+                this.result.examId = examId;
+                axios.post("/results", v.result).then(res => {
+                    console.log(res);
+                })
+                this.studentLength--;
+                if (this.studentLength === 0) {
+                    alert("试卷已改完");
+                    location.reload()
+                }
+            }
+        }
+    })
+</script>

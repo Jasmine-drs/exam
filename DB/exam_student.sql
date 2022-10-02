@@ -1,0 +1,1 @@
+INSERT INTO exam.student (id, name, nick_name, school, classes, sex, avatar_url, creat_time, update_time) VALUES (1682374658, '邓荣松', 'Melancholy-feel', '丽水学院', '计算机213', '0', 'https://thirdwx.qlogo.cn/mmopen/vi_32/PYa8oDrW84FKFeT1FkicRribeJG6MlxiaonprBZk3IlAjRYHREEUxNvtbrKLyW6XZObzzEfoESjMIjtutJ7WtNQvA/132', '2022-09-15 15:54:39', '2022-09-15 21:24:32');
