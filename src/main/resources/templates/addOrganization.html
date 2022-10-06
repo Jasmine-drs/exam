@@ -83,7 +83,8 @@
             /*通用传输*/
             myAjax(str, data) {
                 console.log(data)
-                axios.post(str, data).then(res => {
+                axios.post(str, data)
+                    .then(res => {
                     alert("添加成功")
                     window.close();//无用
                     console.log(res)
@@ -92,6 +93,5 @@
                 })
             }
         },
-
     })
 </script>

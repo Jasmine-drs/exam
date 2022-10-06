@@ -85,7 +85,6 @@
                         axios.get('/exams/' + this.operator).then(res => {
                             console.log(res);
                             this.exams = res.data.data;
-
                             console.log(this.exams)
                             /*获取所有学生*/
                             axios.get("/students").then(res => {
@@ -93,7 +92,6 @@
                                 this.students = res.data.data;
                                 this.studentLength = this.students.length;
                                 this.result.nickName = this.students[0].nickName;
-
                             })
                         })
                         console.log(1111)

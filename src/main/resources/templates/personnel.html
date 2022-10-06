@@ -50,8 +50,8 @@
                     }
                     $("#tb").html(html);
                 },
-                error: function () {
-                    alert("连接失败");
+                error: function (err) {
+                    alert("连接失败:"+err);
                 }
             });
         })
