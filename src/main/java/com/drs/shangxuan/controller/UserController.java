@@ -55,7 +55,7 @@ public class UserController {
         if (user != null) {
             return R.success(user);
         }
-        return null;
+        return R.err("查无此人");
     }
 
     /**
