@@ -23,7 +23,13 @@
       </configuration>
     </facet>
     <facet type="Spring" name="Spring">
-      <configuration />
+      <configuration>
+        <fileset id="fileset" name="CorsConfig" removed="false">
+          <file>file://$MODULE_DIR$/src/main/java/com/drs/shangxuan/config/CorsConfig.java</file>
+          <file>file://$MODULE_DIR$/src/main/java/com/drs/shangxuan/ShangXuanApplication.java</file>
+          <file>file://$MODULE_DIR$/src/main/java/com/drs/shangxuan/config/WebMvcConfig.java</file>
+        </fileset>
+      </configuration>
     </facet>
   </component>
   <component name="NewModuleRootManager" LANGUAGE_LEVEL="JDK_1_8">
